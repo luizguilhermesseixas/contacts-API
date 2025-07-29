@@ -1,29 +1,68 @@
 import { Injectable } from '@nestjs/common';
-import { CreateContactDto } from './dto/create-contact.dto';
-import { UpdateContactDto } from './dto/update-contact.dto';
+import { CreateContactDto } from './dto/request/create-contact.dto';
+import { UpdateContactDto } from './dto/request/update-contact.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ContactResponseDto } from './dto/response/response-contact.dto';
 
 @Injectable()
 export class ContactService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createContactDto: CreateContactDto) {
-    return 'This action adds a new contact';
+  async create(
+    createContactDto: CreateContactDto,
+    userId: string,
+  ): Promise<ContactResponseDto> {
+    const contact = await this.prisma.contact.create({
+      data: {
+        ...createContactDto,
+        userId,
+      },
+    });
+    return new ContactResponseDto(contact);
   }
 
-  findAll() {
-    return `This action returns all contact`;
+  async findAll(userId: string): Promise<ContactResponseDto[]> {
+    const contacts = await this.prisma.contact.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return contacts.map((contact) => new ContactResponseDto(contact));
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contact`;
+  async findOne(id: string, userId: string): Promise<ContactResponseDto> {
+    const contact = await this.prisma.contact.findFirst({
+      where: { id, userId },
+    });
+
+    if (!contact) {
+      throw new Error(`Contact with id ${id} not found`);
+    }
+
+    return new ContactResponseDto(contact);
   }
 
-  update(id: number, updateContactDto: UpdateContactDto) {
-    return `This action updates a #${id} contact`;
+  async update(
+    id: string,
+    updateContactDto: UpdateContactDto,
+    userId: string,
+  ): Promise<ContactResponseDto> {
+    await this.findOne(id, userId);
+
+    const contact = await this.prisma.contact.update({
+      where: { id },
+      data: updateContactDto,
+    });
+
+    return new ContactResponseDto(contact);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} contact`;
+  async remove(id: string, userId: string): Promise<ContactResponseDto> {
+    await this.findOne(id, userId);
+
+    const deleted = await this.prisma.contact.delete({
+      where: { id },
+    });
+
+    return new ContactResponseDto(deleted);
   }
 }
