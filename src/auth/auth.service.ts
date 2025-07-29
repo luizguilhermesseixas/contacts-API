@@ -39,4 +39,17 @@ export class AuthService {
     const token = this.jwtService.sign({ sub: user.id, email: user.email });
     return new AuthResponseDto(token);
   }
+
+  async signIn(signInDto: SignInDto): Promise<AuthResponseDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: signInDto.email },
+    });
+
+    if (!user || !(await bcrypt.compare(signInDto.password, user.password))) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    return new AuthResponseDto(token);
+  }
 }
