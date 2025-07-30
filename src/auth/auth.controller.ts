@@ -10,13 +10,13 @@ import { ApiTags, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('sign-up')
+  @Post('signup')
   @ApiCreatedResponse({ type: AuthResponseDto })
   async signUp(@Body() signUpDto: SignUpDto): Promise<AuthResponseDto> {
     return this.authService.signUp(signUpDto);
   }
 
-  @Post('sign-in')
+  @Post('signin')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: AuthResponseDto })
   async signIn(@Body() signInDto: SignInDto): Promise<AuthResponseDto> {
