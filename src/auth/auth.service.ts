@@ -9,12 +9,16 @@ import * as bcrypt from 'bcryptjs';
 import { SignUpDto } from './dto/request/sign-up.dto';
 import { SignInDto } from './dto/request/sign-in.dto';
 import { AuthResponseDto } from './dto/response/auth-response.dto';
+import { RedisService } from 'src/redis/redis.service';
+import { generateTokens } from './utils/jwt.utils';
+import { storeRefreshToken } from './utils/redis.utils';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly redisService: RedisService,
   ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<AuthResponseDto> {
@@ -36,8 +40,18 @@ export class AuthService {
       },
     });
 
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
-    return new AuthResponseDto(token);
+    const { accessToken, refreshToken } = generateTokens(this.jwtService, {
+      sub: user.id,
+      email: user.email,
+    });
+
+    await storeRefreshToken(
+      this.redisService.getClient(),
+      user.id,
+      refreshToken,
+    );
+
+    return new AuthResponseDto(accessToken, refreshToken);
   }
 
   async signIn(signInDto: SignInDto): Promise<AuthResponseDto> {
@@ -49,7 +63,17 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
-    return new AuthResponseDto(token);
+    const { accessToken, refreshToken } = generateTokens(this.jwtService, {
+      sub: user.id,
+      email: user.email,
+    });
+
+    await storeRefreshToken(
+      this.redisService.getClient(),
+      user.id,
+      refreshToken,
+    );
+
+    return new AuthResponseDto(accessToken, refreshToken);
   }
 }

@@ -7,6 +7,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { RedisService } from 'src/redis/redis.service';
 
 @Module({
   imports: [
@@ -18,7 +19,13 @@ import { JwtAuthGuard } from './jwt-auth.guard';
     PrismaModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, JwtStrategy, JwtAuthGuard],
-  exports: [AuthService, JwtAuthGuard],
+  providers: [
+    AuthService,
+    PrismaService,
+    JwtStrategy,
+    JwtAuthGuard,
+    RedisService,
+  ],
+  exports: [AuthService, JwtAuthGuard, RedisService],
 })
 export class AuthModule {}
