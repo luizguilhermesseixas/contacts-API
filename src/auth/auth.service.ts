@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Injectable,
   ConflictException,
@@ -75,5 +77,44 @@ export class AuthService {
     );
 
     return new AuthResponseDto(accessToken, refreshToken);
+  }
+
+  async refresh(refreshToken: string): Promise<AuthResponseDto> {
+    try {
+      // Verifica a assinatura do refresh token
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET || 'refresh_secret_key',
+      });
+
+      // Busca o token salvo no Redis
+      const storedToken = await this.redisService
+        .getClient()
+        .get(`refresh:${payload.sub}`);
+      if (!storedToken || storedToken !== refreshToken) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // Gera novos tokens
+      const { accessToken, refreshToken: newRefreshToken } = generateTokens(
+        this.jwtService,
+        {
+          sub: payload.sub,
+          email: payload.email,
+        },
+      );
+
+      // Atualiza o refresh token no Redis
+      await storeRefreshToken(
+        this.redisService.getClient(),
+        payload.sub as string,
+        newRefreshToken,
+      );
+
+      return new AuthResponseDto(accessToken, newRefreshToken);
+    } catch (e: unknown) {
+      throw new UnauthorizedException(
+        `Invalid or expired refresh token: ${JSON.stringify(e)}`,
+      );
+    }
   }
 }
