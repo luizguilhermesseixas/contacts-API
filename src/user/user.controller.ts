@@ -8,9 +8,15 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/request/create-user.dto';
+import { UpdateUserDto } from './dto/request/update-user.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+// UserController handles user-related endpoints, we need to implement Roles for ADMINS
+// and USERS, but for now, we will keep it simple.
+// This controller will allow creating, retrieving, updating, and deleting users.
+// We will also implement a simple authentication mechanism in the future.
+@ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
