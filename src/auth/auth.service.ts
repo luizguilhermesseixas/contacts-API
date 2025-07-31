@@ -13,7 +13,11 @@ import { SignInDto } from './dto/request/sign-in.dto';
 import { AuthResponseDto } from './dto/response/auth-response.dto';
 import { RedisService } from 'src/redis/redis.service';
 import { generateTokens } from './utils/jwt.utils';
-import { storeRefreshToken } from './utils/redis.utils';
+import {
+  getRefreshToken,
+  removeRefreshToken,
+  storeRefreshToken,
+} from './utils/redis.utils';
 
 @Injectable()
 export class AuthService {
@@ -81,20 +85,20 @@ export class AuthService {
 
   async refresh(refreshToken: string): Promise<AuthResponseDto> {
     try {
-      // Verifica a assinatura do refresh token
       const payload = this.jwtService.verify(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET || 'refresh_secret_key',
       });
 
       // Busca o token salvo no Redis
-      const storedToken = await this.redisService
-        .getClient()
-        .get(`refresh:${payload.sub}`);
+      const storedToken = await getRefreshToken(
+        this.redisService.getClient(),
+        payload.sub as string,
+      );
+
       if (!storedToken || storedToken !== refreshToken) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      // Gera novos tokens
       const { accessToken, refreshToken: newRefreshToken } = generateTokens(
         this.jwtService,
         {
@@ -103,7 +107,6 @@ export class AuthService {
         },
       );
 
-      // Atualiza o refresh token no Redis
       await storeRefreshToken(
         this.redisService.getClient(),
         payload.sub as string,
@@ -111,6 +114,23 @@ export class AuthService {
       );
 
       return new AuthResponseDto(accessToken, newRefreshToken);
+    } catch (e: unknown) {
+      throw new UnauthorizedException(
+        `Invalid or expired refresh token: ${JSON.stringify(e)}`,
+      );
+    }
+  }
+
+  async logout(refreshToken: string): Promise<void> {
+    try {
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET || 'refresh_secret_key',
+      });
+
+      await removeRefreshToken(
+        this.redisService.getClient(),
+        payload.sub as string,
+      );
     } catch (e: unknown) {
       throw new UnauthorizedException(
         `Invalid or expired refresh token: ${JSON.stringify(e)}`,

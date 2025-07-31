@@ -10,3 +10,17 @@ export async function storeRefreshToken(
     EX: expiresInSeconds,
   });
 }
+
+export async function getRefreshToken(
+  redisClient: RedisClientType,
+  userId: string,
+): Promise<string | null> {
+  return redisClient.get(`refresh:${userId}`);
+}
+
+export async function removeRefreshToken(
+  redisClient: RedisClientType,
+  userId: string,
+): Promise<void> {
+  await redisClient.del(`refresh:${userId}`);
+}

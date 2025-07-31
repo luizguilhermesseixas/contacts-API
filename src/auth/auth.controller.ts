@@ -1,4 +1,11 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Delete,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/request/sign-up.dto';
 import { SignInDto } from './dto/request/sign-in.dto';
@@ -28,5 +35,12 @@ export class AuthController {
   @ApiOkResponse({ type: AuthResponseDto })
   async refresh(@Body() dto: RefreshTokenDto): Promise<AuthResponseDto> {
     return this.authService.refresh(dto.refreshToken);
+  }
+
+  @Delete('logout')
+  @ApiOkResponse({ description: 'Logout successful' })
+  async logout(@Body() dto: RefreshTokenDto): Promise<{ message: string }> {
+    await this.authService.logout(dto.refreshToken);
+    return { message: 'Logout successful' };
   }
 }
