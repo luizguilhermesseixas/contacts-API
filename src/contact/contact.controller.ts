@@ -14,7 +14,7 @@ import { CreateContactDto } from './dto/request/create-contact.dto';
 import { UpdateContactDto } from './dto/request/update-contact.dto';
 import { ContactResponseDto } from './dto/response/response-contact.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @ApiTags('Contact')
 @UseGuards(JwtAuthGuard)

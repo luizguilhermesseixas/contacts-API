@@ -10,7 +10,8 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/request/create-user.dto';
 import { UpdateUserDto } from './dto/request/update-user.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { UserResponseDto } from './dto/response/response-user.dto';
 
 // UserController handles user-related endpoints, we need to implement Roles for ADMINS
 // and USERS, but for now, we will keep it simple.
@@ -22,27 +23,35 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  @ApiCreatedResponse({ type: UserResponseDto })
+  create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.userService.create(createUserDto);
   }
 
   @Get()
-  findAll() {
+  @ApiOkResponse({ type: [UserResponseDto] })
+  findAll(): Promise<UserResponseDto[]> {
     return this.userService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @ApiOkResponse({ type: UserResponseDto })
+  findOne(@Param('id') id: string): Promise<UserResponseDto> {
+    return this.userService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @ApiOkResponse({ type: UserResponseDto })
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @ApiOkResponse({ type: UserResponseDto })
+  remove(@Param('id') id: string): Promise<{ message: string }> {
+    return this.userService.remove(id);
   }
 }

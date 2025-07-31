@@ -12,6 +12,14 @@ export class ContactService {
     createContactDto: CreateContactDto,
     userId: string,
   ): Promise<ContactResponseDto> {
+    const existingContact = await this.prisma.contact.findFirst({
+      where: { email: createContactDto.email, userId },
+    });
+
+    if (existingContact) {
+      throw new Error('Contact with this email already exists');
+    }
+
     const contact = await this.prisma.contact.create({
       data: {
         ...createContactDto,
