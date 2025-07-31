@@ -8,6 +8,7 @@ import {
   Delete,
   Req,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/request/create-contact.dto';
@@ -15,6 +16,7 @@ import { UpdateContactDto } from './dto/request/update-contact.dto';
 import { ContactResponseDto } from './dto/response/response-contact.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { AuthenticatedRequest, hasValidUser } from 'src/@types/request.types';
 
 @ApiTags('Contact')
 @UseGuards(JwtAuthGuard)
@@ -26,16 +28,22 @@ export class ContactController {
   @ApiCreatedResponse({ type: ContactResponseDto })
   create(
     @Body() createContactDto: CreateContactDto,
-    @Req() req: { user: { sub: string } },
+    @Req() req: AuthenticatedRequest,
   ): Promise<ContactResponseDto> {
+    if (!hasValidUser(req)) {
+      throw new UnauthorizedException('Valid user authentication required');
+    }
+
     return this.contactService.create(createContactDto, req.user.sub);
   }
 
   @Get()
   @ApiOkResponse({ type: [ContactResponseDto] })
-  findAll(
-    @Req() req: { user: { sub: string } },
-  ): Promise<ContactResponseDto[]> {
+  findAll(@Req() req: AuthenticatedRequest): Promise<ContactResponseDto[]> {
+    if (!hasValidUser(req)) {
+      throw new UnauthorizedException('Valid user authentication required');
+    }
+
     return this.contactService.findAll(req.user.sub);
   }
 
@@ -43,8 +51,11 @@ export class ContactController {
   @ApiOkResponse({ type: ContactResponseDto })
   findOne(
     @Param('id') id: string,
-    @Req() req: { user: { sub: string } },
+    @Req() req: AuthenticatedRequest,
   ): Promise<ContactResponseDto> {
+    if (!hasValidUser(req)) {
+      throw new UnauthorizedException('Valid user authentication required');
+    }
     return this.contactService.findOne(id, req.user.sub);
   }
 
@@ -53,8 +64,11 @@ export class ContactController {
   update(
     @Param('id') id: string,
     @Body() updateContactDto: UpdateContactDto,
-    @Req() req: { user: { sub: string } },
+    @Req() req: AuthenticatedRequest,
   ): Promise<ContactResponseDto> {
+    if (!hasValidUser(req)) {
+      throw new UnauthorizedException('Valid user authentication required');
+    }
     return this.contactService.update(id, updateContactDto, req.user.sub);
   }
 
@@ -62,8 +76,11 @@ export class ContactController {
   @ApiOkResponse({ type: ContactResponseDto })
   remove(
     @Param('id') id: string,
-    @Req() req: { user: { sub: string } },
+    @Req() req: AuthenticatedRequest,
   ): Promise<ContactResponseDto> {
+    if (!hasValidUser(req)) {
+      throw new UnauthorizedException('Valid user authentication required');
+    }
     return this.contactService.remove(id, req.user.sub);
   }
 }
