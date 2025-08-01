@@ -11,7 +11,7 @@ import {
 function createSuccessSchema(
   dataSchema: BaseSchema | { $ref: string },
   statusCode: string,
-): SuccessSchema {
+): SuccessSchema | { type: 'object'; properties: any; required: string[] } {
   return {
     type: 'object',
     properties: {
@@ -25,7 +25,7 @@ function createSuccessSchema(
         example: statusCode,
         description: 'HTTP status code',
       },
-      data: dataSchema,
+      data: '$ref' in dataSchema ? { allOf: [dataSchema] } : dataSchema,
       timestamp: {
         type: 'string',
         format: 'date-time',
@@ -89,7 +89,6 @@ export function ApiSuccessResponse<T>(
   } else if (isTypeConstructor(dataType)) {
     dataSchema = { $ref: `#/components/schemas/${dataType.name}` };
   } else {
-    // Fallback seguro
     dataSchema = { type: 'object' };
   }
 

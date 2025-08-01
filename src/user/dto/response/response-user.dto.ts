@@ -1,5 +1,6 @@
 import { ContactResponseDto } from '../../../contact/dto/response/response-contact.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsEmail, IsString } from 'class-validator';
 import { User } from 'src/@types/user.types';
 
 export class UserResponseDto {
@@ -15,20 +16,26 @@ export class UserResponseDto {
   }
 
   @ApiProperty({ example: '1' })
+  @IsString()
   id: string;
 
   @ApiProperty({ example: 'John Doe' })
+  @IsString()
   name: string;
 
   @ApiProperty({ example: 'john.doe@example.com' })
+  @IsEmail()
   email: string;
 
   @ApiProperty({ type: [ContactResponseDto] })
+  @IsArray()
   contacts: ContactResponseDto[];
 
   @ApiProperty({ example: '2023-01-01T00:00:00.000Z' })
+  @IsString()
   createdAt: Date;
 
   @ApiProperty({ example: '2023-01-01T00:00:00.000Z' })
+  @IsString()
   updatedAt: Date;
 }
