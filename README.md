@@ -1,98 +1,213 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Contacts API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Contacts-API é um serviço RESTful para gerenciamento de contatos pessoais, construído com NestJS, TypeScript e PostgreSQL. Esta API fornece autenticação segura de usuários com JWT, suporta operações CRUD de contatos e implementa recursos avançados como Redis para armezenar tokens, como um cache.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Como iniciar a aplicação
 
-## Description
+### Pré-requisitos
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js (versão 16 ou superior)
+- Docker e Docker Compose
+- npm ou yarn
 
-## Project setup
+### 1. Clone o repositório
 
 ```bash
-$ npm install
+git clone git@github.com:luizguilhermesseixas/contacts-API.git
+cd Contacts-API
 ```
 
-## Compile and run the project
+### 2. Instale as dependências
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+### 3. Configure as variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+```env
+# Database Configuration
+DATABASE_URL="postgresql://ContactsUser:ContactsPassword@localhost:5432/contacts_db?schema=public"
+
+# JWT Configuration
+JWT_SECRET="your_jwt_secret_key_here"
+JWT_REFRESH_SECRET="your_jwt_refresh_secret_key_here"
+
+# Redis Configuration (opcional, usa valores padrão se não especificado)
+REDIS_URL="redis://localhost:6379"
+
+# Application Configuration
+PORT=3000
+NODE_ENV="development"
+
+# Prisma Configuration
+PRISMA_CLI_QUERY_ENGINE_TYPE="binary"
+```
+
+**Exemplo de valores para desenvolvimento:**
+
+```env
+DATABASE_URL="postgresql://ContactsUser:ContactsPassword@localhost:5432/contacts_db?schema=public"
+JWT_SECRET="minha_chave_secreta_super_forte_para_jwt_access_token_123456789"
+JWT_REFRESH_SECRET="minha_chave_secreta_super_forte_para_jwt_refresh_token_987654321"
+REDIS_URL="redis://localhost:6379"
+```
+
+### 4. Inicie os serviços Docker
+
+Execute o comando para iniciar PostgreSQL e Redis:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker-compose up -d
 ```
 
-## Deployment
+Este comando irá:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- Iniciar PostgreSQL na porta `5432`
+- Iniciar Redis na porta `6379`
+- Criar os volumes necessários para persistência de dados
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 5. Configure o banco de dados
+
+Execute as migrações do Prisma:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma generate
+npx prisma migrate dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 6. Inicie a aplicação
 
-## Resources
+Para desenvolvimento:
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+npm run start:dev
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Para produção:
 
-## Support
+```bash
+npm run build
+npm run start:prod
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 📚 Documentação da API
 
-## Stay in touch
+A documentação completa da API está disponível através do Swagger UI.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Acesse a documentação em:** `http://localhost:3000/api`
 
-## License
+A documentação inclui:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- Todos os endpoints disponíveis
+- Schemas de request e response
+- Exemplos de uso
+- Códigos de status HTTP
+- Modelos de autenticação
+
+## 🔧 Comandos úteis
+
+```bash
+# Rodar em modo de desenvolvimento
+npm run start:dev
+
+# Rodar em modo de produção
+npm run start:prod
+
+# Executar testes
+npm run test
+
+# Executar testes em modo watch
+npm run test:watch
+
+# Verificar linting
+npm run lint
+
+# Corrigir problemas de linting
+npm run lint:fix
+
+# Formatar código
+npm run format
+
+# Gerar cliente Prisma
+npx prisma generate
+
+# Executar migrações do banco
+npx prisma migrate dev
+
+# Visualizar banco de dados (Prisma Studio)
+npx prisma studio
+```
+
+## 🏗️ Estrutura do Projeto
+
+```
+src/
+├── @types/              # Definições de tipos TypeScript
+├── auth/                # Módulo de autenticação
+├── common/              # Utilitários compartilhados
+│   ├── decorators/      # Decorators customizados
+│   ├── filters/         # Filtros de exceção
+│   ├── guards/          # Guards de autorização
+│   └── interceptors/    # Interceptors de resposta
+├── contact/             # Módulo de contatos
+├── user/                # Módulo de usuários
+├── prisma/              # Configuração do Prisma
+└── redis/               # Configuração do Redis
+```
+
+## 🔐 Autenticação
+
+A API utiliza JWT para autenticação com os seguintes endpoints:
+
+- `POST /auth/signup` - Cadastro de usuário
+- `POST /auth/signin` - Login
+- `POST /auth/refresh` - Renovar token
+- `DELETE /auth/logout` - Logout
+
+## 📋 Endpoints Principais
+
+### Usuários
+
+- `POST /user` - Criar usuário
+- `GET /user` - Listar todos os usuários
+- `GET /user/:id` - Buscar usuário por ID
+- `PATCH /user/:id` - Atualizar usuário
+- `DELETE /user/:id` - Deletar usuário
+
+### Contatos
+
+- `POST /contact` - Criar contato (requer autenticação)
+- `GET /contact` - Listar contatos do usuário (requer autenticação)
+- `GET /contact/:id` - Buscar contato por ID (requer autenticação)
+- `PATCH /contact/:id` - Atualizar contato (requer autenticação)
+- `DELETE /contact/:id` - Deletar contato (requer autenticação)
+
+## 🛡️ Segurança
+
+- Autenticação JWT com tokens de acesso e refresh
+- Validação de autorização (usuários só podem acessar seus próprios dados)
+- Senhas criptografadas com bcrypt
+- Tokens de refresh armazenados no Redis
+
+## 🐳 Docker
+
+O projeto inclui:
+
+- PostgreSQL 13.5 para banco de dados
+- Redis 7 para cache e gerenciamento de sessões
+- Volumes Docker para persistência de dados
+
+## 📝 Notas de Desenvolvimento
+
+- A aplicação usa **Prisma** como ORM
+- **Redis** é usado para cache e blacklist de tokens
+- **Swagger** para documentação automática da API
+- **ESLint** e **Prettier** para padronização de código
+- **Jest** para testes unitários
+
+---
+
+**Desenvolvido com ❤️ usando NestJS, TypeScript e PostgreSQL**
