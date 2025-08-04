@@ -6,7 +6,7 @@ export class RedisService implements OnModuleInit {
   private client: RedisClientType;
 
   async onModuleInit() {
-    this.client = createClient({ url: 'redis://localhost:6379' });
+    this.client = createClient({ url: process.env.REDIS_URL });
     await this.client.connect();
     console.log('Redis connected!');
   }
